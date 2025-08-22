@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Template</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- html2pdf.js CDN for PDF export functionality -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .invoice-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background-color: #fff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .editable {
+            outline: none;
+        }
+        .btn {
+            @apply px-4 py-2 rounded-lg font-semibold transition-colors duration-200;
+        }
+        .btn-blue {
+            @apply bg-blue-500 text-white hover:bg-blue-600;
+        }
+        .btn-red {
+            @apply bg-red-500 text-white hover:bg-red-600;
+        }
+        .btn-gray {
+            @apply bg-gray-300 text-gray-800 hover:bg-gray-400;
+        }
+    </style>
+</head>
+<body>
+
+<div class="invoice-container" id="invoice-container">
+    <!-- Invoice Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-center mb-8">
+        <div class="text-4xl font-bold text-gray-800">INVOICE</div>
+        <div class="mt-4 sm:mt-0 text-right">
+            <h1 class="text-2xl font-bold text-blue-600 editable" contenteditable="true">Your Company Name</h1>
+            <p class="text-gray-600 editable" contenteditable="true">123 Your Street<br>Your City, Your State 12345<br>youremail@example.com<br>+1 (555) 555-5555</p>
+        </div>
+    </div>
+
+    <!-- Client & Invoice Info -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
+        <div>
+            <h2 class="text-lg font-semibold text-gray-700">BILL TO:</h2>
+            <div class="mt-2 text-gray-600 editable" contenteditable="true">
+                Client Name<br>
+                Client Street Address<br>
+                Client City, State 12345
+            </div>
+        </div>
+        <div class="text-left sm:text-right">
+            <div class="flex flex-col sm:flex-row justify-end items-start sm:items-center">
+                <span class="text-gray-700 font-semibold w-24">Invoice #</span>
+                <span class="text-gray-600 editable ml-0 sm:ml-4 mt-1 sm:mt-0" contenteditable="true">INV-001</span>
+            </div>
+            <div class="flex flex-col sm:flex-row justify-end items-start sm:items-center mt-2">
+                <span class="text-gray-700 font-semibold w-24">Date</span>
+                <span class="text-gray-600 editable ml-0 sm:ml-4 mt-1 sm:mt-0" contenteditable="true" id="invoice-date"></span>
+            </div>
+            <div class="flex flex-col sm:flex-row justify-end items-start sm:items-center mt-2">
+                <span class="text-gray-700 font-semibold w-24">Due Date</span>
+                <span class="text-gray-600 editable ml-0 sm:ml-4 mt-1 sm:mt-0" contenteditable="true" id="due-date"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Line Items Table -->
+    <div class="overflow-x-auto mb-4">
+        <table class="w-full text-left table-auto">
+            <thead class="bg-gray-200">
+                <tr class="rounded-t-lg">
+                    <th class="p-3 font-semibold text-sm text-gray-700 uppercase tracking-wider rounded-tl-lg w-1/2">Description</th>
+                    <th class="p-3 font-semibold text-sm text-gray-700 uppercase tracking-wider">Hours</th>
+                    <th class="p-3 font-semibold text-sm text-gray-700 uppercase tracking-wider">Rate</th>
+                    <th class="p-3 font-semibold text-sm text-gray-700 uppercase tracking-wider text-right rounded-tr-lg">Total</th>
+                </tr>
+            </thead>
+            <tbody id="line-items-body">
+                <!-- Example line item row -->
+                <tr class="border-b border-gray-200">
+                    <td class="p-3 editable" contenteditable="true">Web Development Services</td>
+                    <td class="p-3 editable" contenteditable="true" data-type="hours">10</td>
+                    <td class="p-3 editable" contenteditable="true" data-type="rate">150</td>
+                    <td class="p-3 text-right font-semibold total-cell">$0.00</td>
+                </tr>
+                <tr class="border-b border-gray-200">
+                    <td class="p-3 editable" contenteditable="true">Design Consultation</td>
+                    <td class="p-3 editable" contenteditable="true" data-type="hours">5</td>
+                    <td class="p-3 editable" contenteditable="true" data-type="rate">125</td>
+                    <td class="p-3 text-right font-semibold total-cell">$0.00</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Add/Remove Line Item Buttons -->
+    <div class="flex space-x-2 justify-end mb-8">
+        <button id="add-item-btn" class="btn btn-blue">Add Line Item</button>
+        <button id="remove-item-btn" class="btn btn-red">Remove Last</button>
+    </div>
+
+    <!-- Totals Section -->
+    <div class="flex justify-end">
+        <div class="w-full sm:w-1/2 md:w-1/3">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-gray-700 font-semibold">Subtotal:</span>
+                <span class="text-gray-600 font-semibold" id="subtotal">$0.00</span>
+            </div>
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-gray-700 font-semibold">Tax (0%):</span>
+                <span class="text-gray-600 font-semibold" id="tax">$0.00</span>
+            </div>
+            <div class="flex justify-between items-center mb-4 border-t-2 border-gray-300 pt-4">
+                <span class="text-xl font-bold text-gray-800">GRAND TOTAL:</span>
+                <span class="text-xl font-bold text-blue-600" id="grand-total">$0.00</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes/Payment Instructions -->
+    <div class="mt-8">
+        <h2 class="text-lg font-semibold text-gray-700">Notes & Payment Instructions</h2>
+        <div class="mt-2 text-gray-600 editable" contenteditable="true">
+            Thank you for your business. Please make payment within 30 days. You can pay via bank transfer to account number 123456789.
+        </div>
+    </div>
+</div>
+
+<!-- PDF Export Button outside of the invoice container for cleaner PDF output -->
+<div class="flex justify-center mt-8 mb-8">
+    <button id="export-pdf-btn" class="btn btn-gray">Export to PDF</button>
+</div>
+
+<script>
+    // Get the current date and set the invoice date field
+    const today = new Date();
+    const formattedDate = `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`;
+    document.getElementById('invoice-date').textContent = formattedDate;
+
+    // Set a default due date (e.g., 30 days from today)
+    const dueDate = new Date();
+    dueDate.setDate(today.getDate() + 30);
+    const formattedDueDate = `${dueDate.getMonth() + 1}/${dueDate.getDate()}/${dueDate.getFullYear()}`;
+    document.getElementById('due-date').textContent = formattedDueDate;
+
+    // Function to calculate totals
+    function calculateTotals() {
+        const rows = document.querySelectorAll('#line-items-body tr');
+        let subtotal = 0;
+
+        rows.forEach(row => {
+            const hoursCell = row.querySelector('[data-type="hours"]');
+            const rateCell = row.querySelector('[data-type="rate"]');
+            const totalCell = row.querySelector('.total-cell');
+
+            const hours = parseFloat(hoursCell.textContent) || 0;
+            const rate = parseFloat(rateCell.textContent) || 0;
+            const rowTotal = hours * rate;
+            
+            totalCell.textContent = `$${rowTotal.toFixed(2)}`;
+            subtotal += rowTotal;
+        });
+
+        // Update the subtotal, tax, and grand total fields
+        document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+        document.getElementById('tax').textContent = `$0.00`; // Tax is set to 0 for simplicity
+        document.getElementById('grand-total').textContent = `$${subtotal.toFixed(2)}`;
+    }
+
+    // Function to add a new line item to the table
+    function addLineItem() {
+        const tbody = document.getElementById('line-items-body');
+        const newRow = document.createElement('tr');
+        newRow.className = 'border-b border-gray-200';
+        newRow.innerHTML = `
+            <td class="p-3 editable" contenteditable="true">New Service</td>
+            <td class="p-3 editable" contenteditable="true" data-type="hours">0</td>
+            <td class="p-3 editable" contenteditable="true" data-type="rate">0</td>
+            <td class="p-3 text-right font-semibold total-cell">$0.00</td>
+        `;
+        tbody.appendChild(newRow);
+        
+        // Re-attach event listeners to all editable cells
+        attachEventListeners();
+        calculateTotals();
+    }
+
+    // Function to remove the last line item from the table
+    function removeLineItem() {
+        const tbody = document.getElementById('line-items-body');
+        const rows = tbody.querySelectorAll('tr');
+        if (rows.length > 1) {
+            tbody.removeChild(rows[rows.length - 1]);
+            calculateTotals();
+        }
+    }
+
+    // Function to export the invoice to a PDF
+    function exportToPDF() {
+        const invoice = document.getElementById('invoice-container');
+        const opt = {
+            margin: 1,
+            filename: 'invoice.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        // Use the html2pdf library to generate and save the PDF
+        html2pdf().from(invoice).set(opt).save();
+    }
+    
+    // Function to attach event listeners to all editable cells
+    function attachEventListeners() {
+        const editableCells = document.querySelectorAll('table .editable');
+        editableCells.forEach(cell => {
+            cell.removeEventListener('input', calculateTotals); // Prevent duplicate listeners
+            cell.addEventListener('input', calculateTotals);
+        });
+    }
+
+    // Attach event listeners to the new buttons
+    document.getElementById('add-item-btn').addEventListener('click', addLineItem);
+    document.getElementById('remove-item-btn').addEventListener('click', removeLineItem);
+    document.getElementById('export-pdf-btn').addEventListener('click', exportToPDF);
+
+    // Initial calculation and listener attachment when the page loads
+    window.onload = function() {
+        attachEventListeners();
+        calculateTotals();
+    };
+</script>
+
+</body>
+</html>
