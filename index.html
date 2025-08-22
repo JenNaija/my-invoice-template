@@ -93,13 +93,13 @@
                     <td class="p-3 editable" contenteditable="true">Web Development Services</td>
                     <td class="p-3 editable" contenteditable="true" data-type="hours">10</td>
                     <td class="p-3 editable" contenteditable="true" data-type="rate">150</td>
-                    <td class="p-3 text-right font-semibold total-cell">$0.00</td>
+                    <td class="p-3 text-right font-semibold total-cell">€0.00</td>
                 </tr>
                 <tr class="border-b border-gray-200">
                     <td class="p-3 editable" contenteditable="true">Design Consultation</td>
                     <td class="p-3 editable" contenteditable="true" data-type="hours">5</td>
                     <td class="p-3 editable" contenteditable="true" data-type="rate">125</td>
-                    <td class="p-3 text-right font-semibold total-cell">$0.00</td>
+                    <td class="p-3 text-right font-semibold total-cell">€0.00</td>
                 </tr>
             </tbody>
         </table>
@@ -116,15 +116,15 @@
         <div class="w-full sm:w-1/2 md:w-1/3">
             <div class="flex justify-between items-center mb-2">
                 <span class="text-gray-700 font-semibold">Subtotal:</span>
-                <span class="text-gray-600 font-semibold" id="subtotal">$0.00</span>
+                <span class="text-gray-600 font-semibold" id="subtotal">€0.00</span>
             </div>
             <div class="flex justify-between items-center mb-2">
                 <span class="text-gray-700 font-semibold">Tax (0%):</span>
-                <span class="text-gray-600 font-semibold" id="tax">$0.00</span>
+                <span class="text-gray-600 font-semibold" id="tax">€0.00</span>
             </div>
             <div class="flex justify-between items-center mb-4 border-t-2 border-gray-300 pt-4">
                 <span class="text-xl font-bold text-gray-800">GRAND TOTAL:</span>
-                <span class="text-xl font-bold text-blue-600" id="grand-total">$0.00</span>
+                <span class="text-xl font-bold text-blue-600" id="grand-total">€0.00</span>
             </div>
         </div>
     </div>
@@ -146,13 +146,13 @@
 <script>
     // Get the current date and set the invoice date field
     const today = new Date();
-    const formattedDate = `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`;
+    const formattedDate = `€{today.getMonth() + 1}/€{today.getDate()}/€{today.getFullYear()}`;
     document.getElementById('invoice-date').textContent = formattedDate;
 
     // Set a default due date (e.g., 30 days from today)
     const dueDate = new Date();
     dueDate.setDate(today.getDate() + 30);
-    const formattedDueDate = `${dueDate.getMonth() + 1}/${dueDate.getDate()}/${dueDate.getFullYear()}`;
+    const formattedDueDate = `€{dueDate.getMonth() + 1}/€{dueDate.getDate()}/€{dueDate.getFullYear()}`;
     document.getElementById('due-date').textContent = formattedDueDate;
 
     // Function to calculate totals
@@ -169,14 +169,14 @@
             const rate = parseFloat(rateCell.textContent) || 0;
             const rowTotal = hours * rate;
             
-            totalCell.textContent = `$${rowTotal.toFixed(2)}`;
+            totalCell.textContent = `€€{rowTotal.toFixed(2)}`;
             subtotal += rowTotal;
         });
 
         // Update the subtotal, tax, and grand total fields
-        document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
-        document.getElementById('tax').textContent = `$0.00`; // Tax is set to 0 for simplicity
-        document.getElementById('grand-total').textContent = `$${subtotal.toFixed(2)}`;
+        document.getElementById('subtotal').textContent = `€€{subtotal.toFixed(2)}`;
+        document.getElementById('tax').textContent = `€0.00`; // Tax is set to 0 for simplicity
+        document.getElementById('grand-total').textContent = `€€{subtotal.toFixed(2)}`;
     }
 
     // Function to add a new line item to the table
@@ -188,7 +188,7 @@
             <td class="p-3 editable" contenteditable="true">New Service</td>
             <td class="p-3 editable" contenteditable="true" data-type="hours">0</td>
             <td class="p-3 editable" contenteditable="true" data-type="rate">0</td>
-            <td class="p-3 text-right font-semibold total-cell">$0.00</td>
+            <td class="p-3 text-right font-semibold total-cell">€0.00</td>
         `;
         tbody.appendChild(newRow);
         
@@ -245,3 +245,4 @@
 
 </body>
 </html>
+
